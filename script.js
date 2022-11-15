@@ -50,10 +50,8 @@ export function wireable(el) {
         x2 = e.clientX;
         y2 = e.clientY;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawLine(x, y, x2, y2);
         drawWires();
-
+        drawLine(x, y, x2, y2);
     }
 
     function endRope(e) {
@@ -70,15 +68,12 @@ export function wireable(el) {
         connections.push([el.parentElement, elem.parentElement]);
 
         console.log("connections: ", connections);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawWires();
     }
 
 
     function quitRope(e) {
         document.onmousemove = null;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // loop through all elements with class "input"
         for (let input of document.getElementsByClassName("input")) {
             input.onclick = null;
         }
@@ -107,6 +102,7 @@ document.body.onload = function() {
 }
 
 export function drawWires() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let wire of wires) {
         drawLine(wire[0].getBoundingClientRect().left + 7, wire[0].getBoundingClientRect().top + 7, wire[1].getBoundingClientRect().left + 7, wire[1].getBoundingClientRect().top + 7);
     }
@@ -134,8 +130,8 @@ function createSwitch() {
         e.preventDefault();
         flip(s.id);
     }
-
     wireable(o);
+    drawWires();
     
 }
 

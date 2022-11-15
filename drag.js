@@ -23,7 +23,6 @@ export function drag(obj) {
 
         obj.style.top = (obj.offsetTop - y2) + 'px';
         obj.style.left = (obj.offsetLeft - x2) + 'px';
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawWires();
 
     }
