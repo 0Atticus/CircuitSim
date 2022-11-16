@@ -1,6 +1,7 @@
 const tables = {
     "AND": [[1, 1]],
     "OR": [[1, 0], [0, 1], [1, 1]],
+    "NOT": [0]
 };
 
 export let switches = [];
@@ -21,22 +22,28 @@ export class Switch {
 export class Gate {
     constructor(type, id, inputs) {
         this.in1 = inputs[0];
-        this.in2 = inputs[1];
+        if (type != "NOT") {
+            this.in2 = inputs[1];
+        }
         this.type = type;
         this.table = tables[type];
         this.id = id;
         gates.push(this);
     }
 
-
     get out() {
-        let ins = [this.in1.out, this.in2.out];
-        for (let i of this.table) {
-            if (JSON.stringify(ins) == JSON.stringify(i)) {
-                return 1;
+        if (this.type == "NOT") {
+
+            let inp = this.in1.out
+            return +!inp;
+
+        } else {
+            let ins = [this.in1.out, this.in2.out];
+            for (let i of this.table) {
+                if (JSON.stringify(ins) == JSON.stringify(i)) return 1;
             }
+            return 0;
         }
-        return 0;
     }
 
 }

@@ -80,7 +80,7 @@ button {
     z-index: 2;
     left: 120px;
     top: 120px;
-    color: #fff;
+    color: #1b1b1b;
     text-align: center;
 }
 
@@ -105,4 +105,28 @@ button {
     top: 0;
     bottom: 0;
     margin: auto;
+}
+
+.gate[type="NOT"] .input[id="1"] {
+    display: none;
+}
+.gate[type="NOT"] .input[id="2"] {
+    top: 0;
+    bottom: 0;
+    margin: auto;
+}
+
+#load-modal, #save-modal {
+    position: absolute;
+    z-index: 4;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 30%;
+    height: 30%;
+    display: none;
+    background: #fff;
+    text-align: center;
 }

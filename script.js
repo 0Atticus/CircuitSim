@@ -38,7 +38,6 @@ export function wireable(el) {
         elRect = el.getBoundingClientRect();
         x = elRect.left + 7;
         y = elRect.top + 7;
-        console.log(x, y);
 
 
     }
@@ -66,27 +65,23 @@ export function wireable(el) {
         if (wires.includes(pair)) return;
         wires.push(pair);
         connections.push([el.parentElement, elem.parentElement]);
-
-        console.log("connections: ", connections);
         drawWires();
+        updateCircuit();
     }
 
-
-    function quitRope(e) {
-        document.onmousemove = null;
-        for (let input of document.getElementsByClassName("input")) {
-            input.onclick = null;
-        }
-        drawWires();
+}
+function quitRope(e) {
+    document.onmousemove = null;
+    for (let input of document.getElementsByClassName("input")) {
+        input.onclick = null;
     }
-
-
+    drawWires();
 }
 
 // function to draw line between two points on canvas
-function drawLine(x1, y1, x2, y2) {
+function drawLine(x1, y1, x2, y2, color) {
 
-    ctx.strokeStyle = "black";
+    ctx.strokeStyle = color;
     ctx.width = 3;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
@@ -104,9 +99,12 @@ document.body.onload = function() {
 export function drawWires() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let wire of wires) {
-        drawLine(wire[0].getBoundingClientRect().left + 7, wire[0].getBoundingClientRect().top + 7, wire[1].getBoundingClientRect().left + 7, wire[1].getBoundingClientRect().top + 7);
+
+        drawLine(wire[0].getBoundingClientRect().left + 7, wire[0].getBoundingClientRect().top + 7, wire[1].getBoundingClientRect().left + 7, wire[1].getBoundingClientRect().top + 7, "black");
+        
     }
 }
+
 
 
 
@@ -128,6 +126,7 @@ function createSwitch() {
     new Switch(s.id);
     s.oncontextmenu = function(e) {
         e.preventDefault();
+        quitRope(e);
         flip(s.id);
     }
     wireable(o);
@@ -155,7 +154,6 @@ function createGate(type) {
     g.appendChild(in2);
     g.appendChild(out);
     document.getElementById("page").appendChild(g);
-    updateCircuit();
     wireable(out);
     drag(g);
     g.ondblclick = () => drag(g);
@@ -167,15 +165,145 @@ function flip(id) {
         if (s.id == id) {
             s.swap();
             document.getElementById(id).setAttribute("value", s.out);
+            if (s.out) {
+                document.getElementById(id).childNodes[0].style.backgroundColor = "#c23131";
+            } else {
+                document.getElementById(id).childNodes[0].style.backgroundColor = "#1b1919";
+            }
         }
     }
+    updateCircuit();
 }
 
 
 
 function updateCircuit() {
-    null;
+    
+    let connectionsDict = {};
+    let gateStack = [];
+
+    for (let i = gateCount; i > 0; -- i) {
+        gateStack.push('g' + i);
+    }
+
+    connections.forEach(i => {
+
+        let input = i[0].id;
+        let gate = i[1].id;
+
+        if (!connectionsDict[gate]) {
+            connectionsDict[gate] = [input];
+        } else {
+            connectionsDict[gate].push(input);
+
+        }
+
+    });
+
+    while (gateStack.length > 0) {
+        gateStack.forEach(id => {
+            traceGate(id);
+        });
+    }
+    flipDiode();
+
+    function traceGate(id) {
+
+    if (document.getElementById(id).getAttribute("type") == "NOT") {
+
+
+        let ins = connectionsDict[id][0];
+        let inputs = [];
+
+        if (ins.includes("s")) {
+            switches.forEach(s => {
+                if (s.id == ins) {
+                    inputs.push(s);
+                }
+            });
+        } else if (ins.includes("g")) {
+            gates.forEach(g => {
+                if (g.id == ins) {
+                    inputs.push(g);
+                }
+            });
+        } else {
+            return;
+        }
+
+        if (!inputs || inputs.length != 1) return;
+        let g = new Gate("NOT", id, inputs);
+        gateStack = arrayRemove(gateStack, id);
+
+        
+    } else {
+
+
+        let ins = connectionsDict[id];
+        let inputs = [];
+
+        if (!ins) {gateStack = arrayRemove(gateStack, id); return;}
+        if (ins.length < 2) {gateStack = arrayRemove(gateStack, id); return;}
+        ins.forEach(i => {
+            if (i.includes("s")) {
+                switches.forEach(s => {
+                    if (s.id == i) {
+                        inputs.push(s);
+                    }
+                });
+            }
+
+            if(i.includes("g")) {
+                gates.forEach(g => {
+                    if (g.id == i) {
+                        inputs.push(g);
+                    }
+                });
+            }
+
+
+        });
+
+
+            if (inputs.length > 2) {inputs = [inputs[0], inputs[1]];}
+            if (inputs.length != 2) return;
+            let g = new Gate(document.getElementById(id).getAttribute("type"), id, inputs);
+            gateStack = arrayRemove(gateStack, id);
+        }
+    }
+
+    function flipDiode() {
+        let inputs = [];
+    
+        if (!connectionsDict["diode"]) return;
+        connectionsDict["diode"].forEach(i => {
+            if (i.includes("s")) {
+                switches.forEach(s => {
+                    if (s.id == i) {
+                        inputs.push(s.out);
+                    }
+                });
+            }
+            if (i.includes("g")) {
+                gates.forEach(g => {
+                    if(g.id == i) {
+                        inputs.push(g.out);
+                    }
+                });
+            }
+        });
+
+        if (inputs.includes(1)) {
+            document.getElementById("diode").childNodes[1].style.backgroundColor = "#c23131";
+        } else {
+            document.getElementById("diode").childNodes[1].style.backgroundColor = "#1b1919";
+        }
+
+    }
+
 }
+
+
 
 
 
@@ -191,11 +319,14 @@ function arrayRemove(arr, value) {
 
 // function to return random color
 function randomColor() {
-    let r = Math.floor(Math.random() * 255).toString(16);
-    let g = Math.floor(Math.random() * 255).toString(16);
-    let b = Math.floor(Math.random() * 255).toString(16);
-    return "#" + r + g + b;
-}
+    let color = "hsl(" + Math.random() * 360 + ", 100%, 75%)";
+    return color;
+  }
+
+
 
 
 document.getElementById("new-and").onclick = () => createGate("AND");
+document.getElementById("new-or").onclick = () => createGate("OR");
+document.getElementById("new-not").onclick = () => createGate("NOT");
+
