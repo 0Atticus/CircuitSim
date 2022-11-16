@@ -1,7 +1,9 @@
 const tables = {
     "AND": [[1, 1]],
     "OR": [[1, 0], [0, 1], [1, 1]],
-    "NOT": [0]
+    "NOT": [0],
+    "NOR": [[0, 0]],
+    "NAND": [[0, 0], [0, 1], [1, 0]]
 };
 
 export let switches = [];
