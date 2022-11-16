@@ -392,7 +392,10 @@ document.getElementById("save").onclick = function() {
             document.getElementById("save-modal").style.display = "none";
         }
     });
-    document.getElementById("save-button").onclick = () => save();
+    document.getElementById("save-button").onclick = function() {
+        save();
+        document.getElementById("save-modal").style.display = "none";
+    }
 }
 
 document.getElementById("load").onclick = function() {
@@ -404,6 +407,7 @@ document.getElementById("load").onclick = function() {
     });
     document.getElementById("upload-button").onclick = function() {
         readFile(load);
+        document.getElementById("load-modal").style.display = "none";
     }
 }
 
