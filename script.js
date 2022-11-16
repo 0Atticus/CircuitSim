@@ -447,3 +447,5 @@ function connectionsToWires(data) {
 document.getElementById("new-and").onclick = () => createGate("AND");
 document.getElementById("new-or").onclick = () => createGate("OR");
 document.getElementById("new-not").onclick = () => createGate("NOT");
+document.getElementById("new-nor").onclick = () => createGate("NOR");
+document.getElementById("new-nand").onclick = () => createGate("NAND");
