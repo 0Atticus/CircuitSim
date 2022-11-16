@@ -64,7 +64,7 @@ export function wireable(el) {
         let pair = [el, elem];
         if (wires.includes(pair)) return;
         wires.push(pair);
-        connections.push([el.parentElement, elem.parentElement]);
+        connections.push([el.parentElement.id, elem.parentElement.id]);
         drawWires();
         updateCircuit();
     }
@@ -155,7 +155,6 @@ function createGate(type) {
     g.appendChild(out);
     document.getElementById("page").appendChild(g);
     wireable(out);
-    drag(g);
     g.ondblclick = () => drag(g);
 }
 
@@ -188,8 +187,8 @@ function updateCircuit() {
 
     connections.forEach(i => {
 
-        let input = i[0].id;
-        let gate = i[1].id;
+        let input = i[0];
+        let gate = i[1];
 
         if (!connectionsDict[gate]) {
             connectionsDict[gate] = [input];
@@ -323,10 +322,124 @@ function randomColor() {
     return color;
   }
 
+function download(filename, text) {
+    var el = document.createElement("a");
+    el.setAttribute("href", 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    el.setAttribute("download", filename);
+    el.style.display = "none";
+    document.body.appendChild(el);
+    el.click();
+    document.body.removeChild(el);
+
+}
+function readFile(callback) {
+    const file = document.getElementById("file-upload").files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+        let data = reader.result;
+        callback(data);
+    }
+    reader.readAsText(file);
+}
 
 
+function save() {
+
+    let saveObj = [];
+    let temp = [];
+    for (let i = 1; i <= gateCount; ++ i) {
+        let el = document.getElementById('g' + i);
+        let data = [el.style.left, el.style.top, el.getAttribute("type")];
+        temp.push(data);
+    }
+    saveObj.push(temp);
+    saveObj.push([switchCount, connections]);
+    saveObj = JSON.stringify(saveObj);
+    download(document.getElementById("file-name").value + ".json", saveObj);
+
+}
+
+// data format
+// [[[gate1], [gate2]], [switchCount, connections]]
+
+async function load(data) {
+    data = JSON.parse(data);
+
+    console.log(data);
+
+    let ss = data[0];
+    ss.forEach(s => {
+        
+        createGate(s[2]);
+        document.getElementById("g" + gateCount).style.left = s[0];
+        document.getElementById("g" + gateCount).style.top = s[1];
+
+    });
+    for (let i = 0; i < parseInt(data[1][0]); ++ i) {
+        createSwitch();
+    }
+
+    connectionsToWires(data[1][1]);
+    connections = data[1][1];
+    updateCircuit();
+}
+
+
+document.getElementById("save").onclick = function() {
+    document.getElementById("save-modal").style.display = "block";
+    document.addEventListener("keydown", (ev) => {
+        if (ev.keyCode == 27) {
+            document.getElementById("save-modal").style.display = "none";
+        }
+    });
+    document.getElementById("save-button").onclick = () => save();
+}
+
+document.getElementById("load").onclick = function() {
+    document.getElementById("load-modal").style.display = "block";
+    document.addEventListener("keydown", (ev) => {
+        if (ev.keyCode == 27) {
+            document.getElementById("load-modal").style.display = "none";
+        }
+    });
+    document.getElementById("upload-button").onclick = function() {
+        readFile(load);
+    }
+}
+
+
+function connectionsToWires(data) {
+    data.forEach(i => {
+        let from = i[0];
+        let to = i[1];
+        let pair = [];
+        if(from.includes("s")) {
+            pair.push(document.getElementById(from).childNodes[0]);
+        } else if (from.includes("g")) {
+            pair.push(document.getElementById(from).childNodes[3]);
+        }
+
+        if (to.includes("g")) {
+            wires.some(function(wire) {
+                if(wire[1] == to) {
+                    pair.push(document.getElementById(to).childNodes[1]);
+                    return 1;
+                }
+            });
+            if (pair.length != 2) {
+                pair.push(document.getElementById(to).childNodes[2]);
+            }
+        } else if (to == "diode") {
+            pair.push(document.getElementById("diode").childNodes[1]);
+        }
+
+        wires.push(pair);
+    });
+    
+    console.log("wires: " + wires);
+    drawWires();
+}
 
 document.getElementById("new-and").onclick = () => createGate("AND");
 document.getElementById("new-or").onclick = () => createGate("OR");
 document.getElementById("new-not").onclick = () => createGate("NOT");
-
