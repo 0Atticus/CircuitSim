@@ -156,6 +156,7 @@ function createGate(type) {
     document.getElementById("page").appendChild(g);
     wireable(out);
     g.ondblclick = () => drag(g);
+    return g;
 }
 
 function createComment( text = "text" ) {
@@ -166,6 +167,7 @@ function createComment( text = "text" ) {
   c.ondblclick = () => drag(c);
   c.oncontextmenu = function(e) {
     e.preventDefault();
+      document.getElementById("text-content") = c.innerHTML;
     document.getElementById("text-modal").style.display = "block";
 
     document.addEventListener("keydown", (ev) => {
@@ -176,6 +178,10 @@ function createComment( text = "text" ) {
 
     document.getElementById("text-button").onclick = function() {
       c.innerHTML = document.getElementById("text-content").value;
+      document.getElementById("text-modal").style.display = "none";
+    }
+    document.getElementById("del-comm").onclick = function() {
+      document.getElementById("page").removeChild(c);
       document.getElementById("text-modal").style.display = "none";
     }
     
@@ -348,8 +354,10 @@ function updateCircuit() {
 
         if (inputs.includes(1)) {
             document.getElementById("diode").childNodes[1].style.backgroundColor = "#c23131";
+          document.getElementById("diode").setAttribute("on", "1");
         } else {
             document.getElementById("diode").childNodes[1].style.backgroundColor = "#1b1919";
+          document.getElementById("diode").setAttribute("on", "0");
         }
 
     }
@@ -512,9 +520,49 @@ function connectionsToWires(data) {
     drawWires();
 }
 
+const bin = (num) => {
+  return (num >>> 0).toString(2);
+}
+
+function generateTruthTable() {
+
+  let table = {};
+
+  for (let i = 0; i < 2**switchCount; ++ i) {
+    let temp = bin(i);
+    let sCount = 0;
+    while (temp.length < switchCount) {
+      temp = "0" + temp;
+    }
+
+    for (let b = 0; b < temp.length; ++ b) {
+      switches.forEach(s => {
+        if (s.id == "s" + (b + 1)) {
+          if(s.out != temp[b]) {
+            flip(s.id);
+          }
+        }
+      });
+    }
+    table[temp] = document.getElementById("diode").getAttribute("on");
+    
+    }
+
+  console.log(table);
+  for(let i = 1; i <= switchCount; ++ i) {
+    flip("s" + i);
+  }
+  return table;
+}
+
+
+
+
+
 document.getElementById("new-and").onclick = () => createGate("AND");
 document.getElementById("new-or").onclick = () => createGate("OR");
 document.getElementById("new-not").onclick = () => createGate("NOT");
 document.getElementById("new-nor").onclick = () => createGate("NOR");
 document.getElementById("new-nand").onclick = () => createGate("NAND");
-document.getElementById("new-comment").onclick = () => createComment();
+document.getElementById("new-comment").onclick = function() {let c = createComment(); drag(c);}
+document.getElementById("create-table").onclick = () => generateTruthTable();
