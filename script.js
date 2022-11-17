@@ -255,6 +255,7 @@ function updateCircuit() {
             if(i.includes("g")) {
                 gates.forEach(g => {
                     if (g.id == i) {
+                        if (inputs.includes(g)) return;
                         inputs.push(g);
                     }
                 });
