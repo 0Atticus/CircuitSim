@@ -1,4 +1,4 @@
-//on #c23131
+
 import {switches, gates, Switch, Gate} from "./gates.js";
 import {drag} from "./drag.js";
 
@@ -177,7 +177,15 @@ function flip(id) {
 
 
 function updateCircuit() {
-    
+
+  gates.forEach(g => {
+    g.destroy;
+    g = null;
+  })
+
+  
+    console.log("num switches: " + switches.length + " num gates: " + gates.length);
+  
     let connectionsDict = {};
     let gateStack = [];
 
@@ -189,15 +197,17 @@ function updateCircuit() {
 
         let input = i[0];
         let gate = i[1];
+      console.log("input: "  + input + " gate: " + gate);
 
         if (!connectionsDict[gate]) {
             connectionsDict[gate] = [input];
         } else {
             connectionsDict[gate].push(input);
-
         }
 
     });
+    console.log("conDict: " + connectionsDict);
+  
 
     while (gateStack.length > 0) {
         gateStack.forEach(id => {
@@ -208,6 +218,7 @@ function updateCircuit() {
 
     function traceGate(id) {
 
+      
     if (document.getElementById(id).getAttribute("type") == "NOT") {
 
 
@@ -232,6 +243,7 @@ function updateCircuit() {
 
         if (!inputs || inputs.length != 1) return;
         let g = new Gate("NOT", id, inputs);
+        console.log(id + " : " + inputs);
         gateStack = arrayRemove(gateStack, id);
 
         
@@ -239,11 +251,13 @@ function updateCircuit() {
 
 
         let ins = connectionsDict[id];
-        let inputs = [];
+        console.log("ins: " + ins);
+        var inputs = [];
 
         if (!ins) {gateStack = arrayRemove(gateStack, id); return;}
         if (ins.length < 2) {gateStack = arrayRemove(gateStack, id); return;}
         ins.forEach(i => {
+          if(inputs.length >= 2) return;
             if (i.includes("s")) {
                 switches.forEach(s => {
                     if (s.id == i) {
@@ -265,9 +279,23 @@ function updateCircuit() {
         });
 
 
-            if (inputs.length > 2) {inputs = [inputs[0], inputs[1]];}
-            if (inputs.length != 2) return;
+            if (inputs.length < 2) return;
+            inputs = [...new Set(inputs)];
+            console.log("new inputs: " + inputs);
             let g = new Gate(document.getElementById(id).getAttribute("type"), id, inputs);
+        console.log(id + " : " + inputs + " : " + g.out);
+      for(let p of inputs) {
+        switches.forEach(s => {
+          if (s.id == p.id) {
+            console.log(s.id + " : " + s.out);
+          }
+        });
+        gates.forEach(g => {
+          if (g.id == p.id) {
+            console.log(g.id + " : " + g.out);
+          }
+        })
+      }
             gateStack = arrayRemove(gateStack, id);
         }
     }
@@ -310,7 +338,7 @@ function updateCircuit() {
 
 
 // function to remove an element from an array
-function arrayRemove(arr, value) {
+export function arrayRemove(arr, value) {
     return arr.filter(function(ele){
         return ele != value;
     });
