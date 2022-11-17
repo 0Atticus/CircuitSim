@@ -158,6 +158,31 @@ function createGate(type) {
     g.ondblclick = () => drag(g);
 }
 
+function createComment( text = "text" ) {
+  let c = document.createElement("div");
+  c.className = "comment";
+  c.innerHTML = text;
+  document.getElementById("page").appendChild(c);
+  c.ondblclick = () => drag(c);
+  c.oncontextmenu = function(e) {
+    e.preventDefault();
+    document.getElementById("text-modal").style.display = "block";
+
+    document.addEventListener("keydown", (ev) => {
+      if(ev.keyCode == 27) {
+        document.getElementById("text-modal").style.display = "none";
+      }
+    });
+
+    document.getElementById("text-button").onclick = function() {
+      c.innerHTML = document.getElementById("text-content").value;
+      document.getElementById("text-modal").style.display = "none";
+    }
+    
+  }
+  return c;
+}
+
         
 function flip(id) {
     for (let s of switches) {
@@ -383,13 +408,19 @@ function save() {
     }
     saveObj.push(temp);
     saveObj.push([switchCount, connections]);
+    temp = [];
+    for (let i of document.querySelectorAll(".comment")) {
+      temp.push([i.style.left, i.style.top, i.innerHTML]);
+    }
+    saveObj.push(temp);
+  
     saveObj = JSON.stringify(saveObj);
     download(document.getElementById("file-name").value + ".json", saveObj);
 
 }
 
 // data format
-// [[[gate1], [gate2]], [switchCount, connections]]
+// [[[gate1], [gate2]], [switchCount, connections], [comments]]
 
 async function load(data) {
     data = JSON.parse(data);
@@ -411,6 +442,14 @@ async function load(data) {
     connectionsToWires(data[1][1]);
     connections = data[1][1];
     updateCircuit();
+  
+  data[2].forEach(c => {
+    let comm = createComment(c[2]);
+    comm.style.left = c[0];
+    comm.style.top = c[1];
+    
+  })
+  
 }
 
 
@@ -478,3 +517,4 @@ document.getElementById("new-or").onclick = () => createGate("OR");
 document.getElementById("new-not").onclick = () => createGate("NOT");
 document.getElementById("new-nor").onclick = () => createGate("NOR");
 document.getElementById("new-nand").onclick = () => createGate("NAND");
+document.getElementById("new-comment").onclick = () => createComment();
