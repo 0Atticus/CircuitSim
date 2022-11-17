@@ -116,7 +116,7 @@ button {
     margin: auto;
 }
 
-#load-modal, #save-modal {
+#load-modal, #save-modal, #text-modal {
     position: absolute;
     z-index: 4;
     left: 0;
@@ -129,4 +129,11 @@ button {
     display: none;
     background: #fff;
     text-align: center;
+}
+.comment {
+  z-index: 3;
+  position: absolute;
+  padding: 2px;
+  background: #464343;
+  color: #fff;
 }
