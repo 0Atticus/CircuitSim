@@ -1,13 +1,14 @@
+import {arrayRemove} from "./script.js";
 const tables = {
     "AND": [[1, 1]],
     "OR": [[1, 0], [0, 1], [1, 1]],
     "NOT": [0],
     "NOR": [[0, 0]],
-    "NAND": [[0, 0], [0, 1], [1, 0]]
+    "NAND": [[0, 0], [0, 1], [1, 0]],
 };
 
 export let switches = [];
-export let gates = [];
+export var gates = [];
 
 export class Switch {
     constructor(id) {
@@ -47,5 +48,8 @@ export class Gate {
             return 0;
         }
     }
+  get destroy() {
+    gates = arrayRemove(gates, this);
+  }
 
 }
