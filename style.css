@@ -116,7 +116,7 @@ button {
     margin: auto;
 }
 
-#load-modal, #save-modal, #text-modal {
+#load-modal, #save-modal, #text-modal, #table-modal {
     position: absolute;
     z-index: 4;
     left: 0;
@@ -136,4 +136,26 @@ button {
   padding: 2px;
   background: #464343;
   color: #fff;
+}
+
+#table-modal table{
+    position: absolute;
+    margin: auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: #303030;
+    border: 1px solid white;
+    padding: 10px;
+}
+
+table, th, td {
+    border: 1px solid #464343;
+    padding: 2px;
+}
+
+#table-modal {
+    background: transparent;
+    display: none;
 }

@@ -167,7 +167,7 @@ function createComment( text = "text" ) {
   c.ondblclick = () => drag(c);
   c.oncontextmenu = function(e) {
     e.preventDefault();
-      document.getElementById("text-content") = c.innerHTML;
+      document.getElementById("text-content").value = c.innerHTML;
     document.getElementById("text-modal").style.display = "block";
 
     document.addEventListener("keydown", (ev) => {
@@ -215,7 +215,6 @@ function updateCircuit() {
   })
 
   
-    console.log("num switches: " + switches.length + " num gates: " + gates.length);
   
     let connectionsDict = {};
     let gateStack = [];
@@ -228,7 +227,6 @@ function updateCircuit() {
 
         let input = i[0];
         let gate = i[1];
-      console.log("input: "  + input + " gate: " + gate);
 
         if (!connectionsDict[gate]) {
             connectionsDict[gate] = [input];
@@ -237,7 +235,6 @@ function updateCircuit() {
         }
 
     });
-    console.log("conDict: " + connectionsDict);
   
 
     while (gateStack.length > 0) {
@@ -274,7 +271,6 @@ function updateCircuit() {
 
         if (!inputs || inputs.length != 1) return;
         let g = new Gate("NOT", id, inputs);
-        console.log(id + " : " + inputs);
         gateStack = arrayRemove(gateStack, id);
 
         
@@ -282,7 +278,6 @@ function updateCircuit() {
 
 
         let ins = connectionsDict[id];
-        console.log("ins: " + ins);
         var inputs = [];
 
         if (!ins) {gateStack = arrayRemove(gateStack, id); return;}
@@ -312,21 +307,7 @@ function updateCircuit() {
 
             if (inputs.length < 2) return;
             inputs = [...new Set(inputs)];
-            console.log("new inputs: " + inputs);
             let g = new Gate(document.getElementById(id).getAttribute("type"), id, inputs);
-        console.log(id + " : " + inputs + " : " + g.out);
-      for(let p of inputs) {
-        switches.forEach(s => {
-          if (s.id == p.id) {
-            console.log(s.id + " : " + s.out);
-          }
-        });
-        gates.forEach(g => {
-          if (g.id == p.id) {
-            console.log(g.id + " : " + g.out);
-          }
-        })
-      }
             gateStack = arrayRemove(gateStack, id);
         }
     }
@@ -433,7 +414,6 @@ function save() {
 async function load(data) {
     data = JSON.parse(data);
 
-    console.log(data);
 
     let ss = data[0];
     ss.forEach(s => {
@@ -516,7 +496,6 @@ function connectionsToWires(data) {
         wires.push(pair);
     });
     
-    console.log("wires: " + wires);
     drawWires();
 }
 
@@ -544,15 +523,45 @@ function generateTruthTable() {
         }
       });
     }
+    console.log("temp: " + temp);
     table[temp] = document.getElementById("diode").getAttribute("on");
     
     }
 
-  console.log(table);
+  let data = "<table><tr>";
+
+
   for(let i = 1; i <= switchCount; ++ i) {
     flip("s" + i);
+    data += "<th>s" + i +  "</th>";
   }
-  return table;
+
+  console.log(table);
+  data += "<th>out</th>";
+  data += "</tr>";
+
+  for (let i = 0; i < 2**switchCount; ++ i) {
+    let b = bin(i);
+    while (b.length < switchCount) {
+        b = "0" + b;
+    }
+    data += "<tr>";
+    for (let c of b) {
+        data += "<td>" + c + "</td>";
+    }
+    data += "<td>" + table[b] + "</td>"
+    data += "</tr>";
+  }
+
+  console.log(data);
+  document.getElementById("table-modal").innerHTML = data;
+  document.getElementById("table-modal").style.display = "block";
+  document.onkeydown = (ev) => {
+    if (ev.keyCode == 27) {
+      document.getElementById("table-modal").style.display = "none";
+    }
+  }
+
 }
 
 
