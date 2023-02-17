@@ -414,7 +414,9 @@ function save() {
 async function load(data) {
     data = JSON.parse(data);
 
-
+    connections = [];
+    wires = [];
+    
     let ss = data[0];
     ss.forEach(s => {
         
